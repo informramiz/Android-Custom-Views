@@ -23,7 +23,16 @@ class DialView @JvmOverloads constructor(
             OFF(R.string.fan_off),
             LOW(R.string.fan_low),
             MEDIUM(R.string.fan_medium),
-            HIGH(R.string.fan_high)
+            HIGH(R.string.fan_high);
+
+            fun next(): FanSpeed {
+                return when(this) {
+                    OFF -> LOW
+                    LOW -> MEDIUM
+                    MEDIUM -> HIGH
+                    HIGH -> OFF
+                }
+            }
         }
 
         private const val RADIUS_OFFSET_LABEL = 30
@@ -39,6 +48,10 @@ class DialView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
         textSize = 50f
         typeface = Typeface.create("my-bold", Typeface.BOLD)
+    }
+
+    init {
+        isClickable = true
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -78,5 +91,21 @@ class DialView @JvmOverloads constructor(
             val label = resources.getString(speed.label)
             canvas.drawText(label, pointPosition.x, pointPosition.y, paint)
         }
+    }
+
+    override fun performClick(): Boolean {
+        //check if super class has already handled it, if yes then return true
+        //this is important because this call triggers onClickListeners as well as
+        // accessibility events so it must happen first
+        if (super.performClick()) return true
+
+        //otherwise we are allowed to handle
+        currentFanSpeed = currentFanSpeed.next()
+        contentDescription = resources.getString(currentFanSpeed.label)
+
+        //we have made changes so our view now needs to redraw itself, to do so we have to request
+        //the view to redraw itself
+        invalidate()
+        return true
     }
 }
