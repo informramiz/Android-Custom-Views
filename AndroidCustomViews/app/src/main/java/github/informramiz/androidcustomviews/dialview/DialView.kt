@@ -4,7 +4,9 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
+import androidx.core.content.withStyledAttributes
 import github.informramiz.androidcustomviews.R
 import kotlin.math.cos
 import kotlin.math.min
@@ -49,9 +51,20 @@ class DialView @JvmOverloads constructor(
         textSize = 50f
         typeface = Typeface.create("my-bold", Typeface.BOLD)
     }
+    @ColorInt
+    private var fanLowColor: Int = 0
+    @ColorInt
+    private var fanMediumColor: Int = 0
+    @ColorInt
+    private var fanHighColor: Int = 0
 
     init {
         isClickable = true
+        context.withStyledAttributes(attrs, R.styleable.DialView) {
+            fanLowColor = getColor(R.styleable.DialView_fanLowColor, 0)
+            fanMediumColor = getColor(R.styleable.DialView_fanMediumColor, 0)
+            fanHighColor = getColor(R.styleable.DialView_fanHighColor, 0)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -72,7 +85,12 @@ class DialView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         //use green color if fan on otherwise fan off
-        paint.color = if (currentFanSpeed == FanSpeed.OFF) Color.GRAY else Color.GREEN
+        paint.color = when (currentFanSpeed) {
+            FanSpeed.OFF -> Color.GRAY
+            FanSpeed.LOW -> fanLowColor
+            FanSpeed.MEDIUM -> fanMediumColor
+            FanSpeed.HIGH -> fanHighColor
+        }
         //draw the dial circle
         canvas.drawCircle(width/2f, height/2f, radius, paint)
 
